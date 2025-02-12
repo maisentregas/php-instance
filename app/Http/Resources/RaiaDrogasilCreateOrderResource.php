@@ -16,7 +16,7 @@ class RaiaDrogasilCreateOrderResource extends JsonResource
     {
         return [
             'client' => $this->email,
-            'city' => $this->address[0]->City,
+            'city' => $this->address[0]->State . '/' . $this->address[0]->City,
             'payment' => $this->payment,
             'billing' => $this->billing,
             'delivery' => $this->delivery,
