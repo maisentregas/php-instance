@@ -19,8 +19,8 @@ class RaiaDrogasilTenderRejectedResource extends JsonResource
                 "RouterMessageType" => "CARRIER_TENDER_RESPONSE",
                 "ActionType" => "TENDER_DECLINE",
                 "PartnerId" => "raiassf11o:RD-RaiaDrogasil-SA",
-                "SenderRouterOrgId" => "mxcassf11o:LETS",
-                "PartnerAliasId" => "LETS"
+                "SenderRouterOrgId" => "mxcassf11o:" . $this->carrier_id,
+                "PartnerAliasId" => $this->carrier_id
             ],
             "TenderResponseDTO" => [
                 "ShipmentId" => $this->shipment_id,

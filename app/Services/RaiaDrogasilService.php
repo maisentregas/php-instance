@@ -68,7 +68,7 @@ class RaiaDrogasilService
             if ($response->failed())
                 throw new Exception($response->body(), $response->status());
 
-            # Get expire from respose maybe
+            # Get expire from response maybe
             $seconds = 60 * 60; # 3600 seconds | 60 minutes
 
             cache()->store('redis')->put('token-' . $email . '-' . hash('sha256', $apiKey), $response['access_token'], $seconds);
@@ -142,9 +142,7 @@ class RaiaDrogasilService
                 if ($createOrderResponse->failed() || ($createOrderResponse->successful() && $createOrderResponse['success'] == false))
                     throw new Exception($createOrderResponse->body(), $createOrderResponse->status());
 
-                dd($createOrderResponse->status(), $createOrderResponse->body());
-
-                Log::info('Order created. | Id. ' . $createOrderResponse['id'] . ' |  Shipment id. ' . $data['ShipmentId']);
+                Log::info('Order created. | Id. ' . $createOrderResponse['id'] . ' |  Shipment id. ' . $data['shipment_id']);
 
                 $data['created_order_id'] = $createOrderResponse['id'];
                 $data['price'] = $createOrderResponse['billing']['value'];
@@ -158,9 +156,9 @@ class RaiaDrogasilService
                     $this->publishTracking(new RaiaDrogasilIntegratedTrackingResource((object) $data));
                     $this->publishTracking(new RaiaDrogasilPriceTrackingResource((object) $data));
                     
-                    Log::info('Response sent. | Id. ' . $createOrderResponse['id'] . ' |  Shipment id. ' . $data['ShipmentId']);
+                    Log::info('Response sent. | Id. ' . $createOrderResponse['id'] . ' |  Shipment id. ' . $data['shipment_id']);
                 } catch (Exception $exception) {
-                    Log::error('Error while trying to send response. | Id. ' . $createOrderResponse['id'] . ' | Shipment id. ' . $data['ShipmentId'] . ' | Exceção ' . $exception->getMessage() . ' | ' . $exception->getTraceAsString());
+                    Log::error('Error while trying to send response. | Id. ' . $createOrderResponse['id'] . ' | Shipment id. ' . $data['shipment_id'] . ' | Exceção ' . $exception->getMessage() . ' | ' . $exception->getTraceAsString());
                 }
             } catch (Exception $exception) {
                 Log::error('Error while trying to create order. | ' . $exception->getMessage() . ' | ' . $exception->getTraceAsString());
@@ -177,11 +175,14 @@ class RaiaDrogasilService
         }
     }
 
-    private function recallOrder($orderMessage)
+    private function recallOrder($orderMessage, $accessToken)
     {
-        $orderResponse = Http::get($this->url . '/order/' . $orderMessage['ShipmentId']);
+        $orderResponse = Http::asForm()->withHeaders([
+            'X-App-ID' => 'integration',
+            'x-access-token' => $accessToken
+        ])->get($this->url . '/order/' . $orderMessage['ShipmentId']);
 
-        if (! $orderResponse->successful()) {
+        if ($orderResponse->failed()) {
             Log::info('Order with shipment id. ' . $orderMessage['ShipmentId'] . ' not found.');
 
             return false;
@@ -191,30 +192,51 @@ class RaiaDrogasilService
 
         $data = [
             'reason' =>  "Cancelado pelo cliente",
-            'timestamp' => $timestamp
+            'timestamp' => $timestamp,
+            'shipment_id' => $orderMessage['ShipmentId'],
+            'carrier_id' => $orderMessage['CarrierId'],
+            'latest_tracked_stop_sequence' => $orderMessage['LatestTrackedStopSequence']
         ];
 
-        $canceledOrderResponse = Http::post($this->url . '/order/' . $orderResponse['id'] . '/cancel');
+        $canceledOrderResponse = Http::asForm()->withHeaders([
+            'X-App-ID' => 'integration',
+            'x-access-token' => $accessToken
+        ])->post($this->url . '/order/' . $orderResponse['id'] . '/cancel', [
+            'reason' => $data['reason']
+        ]);
 
         if ($canceledOrderResponse->successful()) {
-            $this->publishTracking(new RaiaDrogasilRecallOrderResource($data));
+            $this->publishTracking(new RaiaDrogasilRecallOrderResource((object) $data));
 
             Log::info('Order cancelled. | Id. ' . $orderResponse['id'] . ' | Shipment id. ' . $orderMessage['ShipmentId']);
         }
     }
 
-    public function sendTracking(...$params)
+    public function sendTracking(Array $params)
     {
         # Integration name == 'raia'?
 
         $data = [
             'shipment_id' => $params['shipment_id'],
-            'timestamp' => $params['timestamp']
+            'carrier_id' => $params['carrier_id'],
+            'stop_sequence' => $params['stop_sequence'],
+            'tracking_reason_code_id' => $params['tracking_code'],
+            'message_type' => $params['message_type'],
+            'message_name' => $params['message_name'] ?? $params['message_type'],
+            'timestamp' => Carbon::now()
         ];
 
-        $this->publishTracking(new RaiaDrogasilDefaultTrackingResource($data));
+        try {
+            $this->publishTracking(new RaiaDrogasilDefaultTrackingResource((object) $data));
 
-        Log::info('Tracking with shipment id. ' . $params['shipment_id'] . ' was sent at ' . $params['timestamp']);
+            Log::info('Tracking with shipment id. ' . $params['shipment_id'] . ' was sent at ' . $data['timestamp']);
+        } catch (\Throwable $th) {
+            Log::info('Error while triyng to send tracking with shipment id. ' . $params['shipment_id'] . ' at ' . $data['timestamp']);
+
+            throw $th;
+        }
+
+        return $data;
     }
 
     private function publishTracking($message)
