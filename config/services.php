@@ -35,4 +35,7 @@ return [
         ],
     ],
 
+    'raia_drogasil' => [
+        'internal_access_token' => env('INTERNAL_ACCESS_TOKEN')
+    ],
 ];

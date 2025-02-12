@@ -22,7 +22,12 @@ class SendTrackingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'shipment_id' => 'required|string',
+            'carrier_id' => 'required|string',
+            'stop_sequence' => 'required|integer',
+            'tracking_code' => 'required|integer',
+            'message_type' => 'required|string',
+            'message_name' => 'string'
         ];
     }
 }

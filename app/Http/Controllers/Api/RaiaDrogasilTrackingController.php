@@ -20,24 +20,16 @@ class RaiaDrogasilTrackingController extends Controller
 
     public function sendTracking(SendTrackingRequest $request)
     {
-        # Definir quais parâmetros eu preciso e tratar dentro do FormRequest
-        $validated = $request->validate([
-            'tracking_code' => 'required|string',
-            'order_id'      => 'required|string',
-            'status'        => 'required|string|in:pending,shipped,delivered,cancelled',
-            'timestamp'     => 'required|date_format:Y-m-d H:i:s',
-        ]);
-
         try {
-            $response = $this->raiaDrogasilService->sendTracking($validated);
+            $response = $this->raiaDrogasilService->sendTracking($request->validated());
 
             return response()->json([
-                'message' => 'Tracking enviado!',
+                'message' => 'Tracking sent!',
                 'data'    => $response
             ], JsonResponse::HTTP_OK);
         } catch (Exception $exception) {
             return response()->json([
-                'error'   => 'Erro ao enviar tracking',
+                'error'   => 'Error while triyng to send tracking.',
                 'message' => $exception->getMessage()
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
