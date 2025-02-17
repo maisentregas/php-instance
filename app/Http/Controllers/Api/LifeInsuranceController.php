@@ -7,7 +7,7 @@ use App\Http\Requests\CancelOrFinalizeInsuranceRequest;
 use App\Http\Requests\FinalizeInsuranceRequest;
 use App\Http\Requests\InsurePersonRequest;
 use App\Services\LifeInsuranceService;
-
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -26,14 +26,19 @@ class LifeInsuranceController extends Controller
             $validatedFields = $insurePersonRequest->validated();
             $response = $this->lifeInsuranceService->insurePerson($validatedFields['person']);
 
-            return response()->json([
-                '' => ''
-            ], JsonResponse::HTTP_OK);
-        } catch (\Throwable $th) {
-            //throw $th;
+            if (! $response) {
+                return response()->json([
+                    'success' => false
+                ], JsonResponse::HTTP_SERVICE_UNAVAILABLE);
+            }
 
             return response()->json([
-                '' => ''
+                'success' => true
+            ], JsonResponse::HTTP_OK);
+        } catch (Exception $exception) {
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage()
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -45,13 +50,13 @@ class LifeInsuranceController extends Controller
             $response = $this->lifeInsuranceService->finalizeInsurance($validatedFields['period_id']);
 
             return response()->json([
-                '' => ''
+                'success' => true,
+                'data' => $response
             ], JsonResponse::HTTP_OK);
-        } catch (\Throwable $th) {
-            //throw $th;
-
+        } catch (Exception $exception) {
             return response()->json([
-                '' => ''
+                'success' => false,
+                'message' => $exception->getMessage()
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -63,13 +68,13 @@ class LifeInsuranceController extends Controller
             $response = $this->lifeInsuranceService->cancelOrFinalizeInsurance($validatedFields['period_id'], $validatedFields['period_started_at']);
 
             return response()->json([
-                '' => ''
+                'success' => true,
+                'data' => $response
             ], JsonResponse::HTTP_OK);
-        } catch (\Throwable $th) {
-            //throw $th;
-
+        } catch (Exception $exception) {
             return response()->json([
-                '' => ''
+                'success' => false,
+                'message' => $exception->getMessage()
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
