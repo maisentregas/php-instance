@@ -38,4 +38,11 @@ return [
     'raia_drogasil' => [
         'internal_access_token' => env('INTERNAL_ACCESS_TOKEN')
     ],
+
+    # Default keys are from homolog
+    'iza_intermittent' => [
+        'api_url' => env('IZA_API_URL', 'https://intermittent-web-api.hml.iza.com.vc/api'),
+        'user_key' => env('IZA_USER_KEY', 'be8984e0-2c12-4b7f-bbf8-b2ed0e86292c'),
+        'user_secret' => env('IZA_USER_SECRET', 'ngmfVFqixx4T6a9H9yq02fjuaepeH+gKdxtzzDRij1xSwJFCgWHKkzJfxXRQ7b7P')
+    ]
 ];
