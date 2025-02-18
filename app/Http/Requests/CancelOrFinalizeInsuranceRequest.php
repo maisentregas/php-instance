@@ -11,7 +11,7 @@ class CancelOrFinalizeInsuranceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,8 @@ class CancelOrFinalizeInsuranceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'period_id' => 'required|string',
+            'period_started_at' => 'required|string'
         ];
     }
 }

@@ -11,7 +11,7 @@ class InsurePersonRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,13 @@ class InsurePersonRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'person' => 'required',
+            'person.document' => 'required|string',
+            'person.first_name' => 'required|string',
+            'person.last_name' => 'required|string',
+            'person.birthday' => 'required|string',
+            'person.email' => 'required|string|email',
+            'person.phone' => 'string'
         ];
     }
 }
