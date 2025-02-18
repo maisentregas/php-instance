@@ -98,7 +98,7 @@ class LifeInsuranceRepository
         return $response;
     }
 
-    public function addGeolocation($document, $latitude, $longitude, $datetime)
+    public function addGeolocation($document, $datetime, $latitude, $longitude)
     {
         $params = [
             "doc" => str_replace([' ', '.', '-', '(', ')'], '', $document),
@@ -109,7 +109,12 @@ class LifeInsuranceRepository
 
         $specificUrl = "/integrations/intermittent/persons/geolocation";
 
-        return $this->postHttp($specificUrl, $params);
+        $response = $this->postHttp($specificUrl, $params);
+
+        if ($response->failed())
+            Log::info('Life insurance addGeolocation failed response: ' . $response->body());
+
+        return $response;
     }
 
     public function createContract($document)

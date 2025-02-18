@@ -70,9 +70,14 @@ class LifeInsuranceService
         return $this->lifeInsuranceRepository->personDetailsByCellPhone($phone);
     }
 
-    public function addGeolocation($document, $latitude, $longitude, $datetime)
+    public function addGeolocation($document, $datetime, $latitude, $longitude)
     {
-        return $this->lifeInsuranceRepository->addGeolocation($document, $latitude, $longitude, $datetime);
+        $response = $this->lifeInsuranceRepository->addGeolocation($document, $datetime, $latitude, $longitude);
+
+        if ($response->failed())
+            throw new Exception($response->body(), $response->status());
+
+        return $response;
     }
 
     public function addGeolocationV2($document, $latitude, $longitude, $requestId)

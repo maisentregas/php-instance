@@ -3,13 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CancelOrFinalizeInsuranceRequest;
-use App\Http\Requests\FinalizeInsuranceRequest;
-use App\Http\Requests\InsurePersonRequest;
+use App\Http\Requests\{
+    AddGeolocationRequest,
+    CancelOrFinalizeInsuranceRequest,
+    FinalizeInsuranceRequest,
+    InsurePersonRequest,
+    ListPeriodsByDocumentRequest,
+};
 use App\Services\LifeInsuranceService;
-use Exception;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
+use Exception;
 
 class LifeInsuranceController extends Controller
 {
@@ -35,6 +41,23 @@ class LifeInsuranceController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $response
+            ], JsonResponse::HTTP_OK);
+        } catch (Exception $exception) {
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage()
+            ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function addGeolocation(AddGeolocationRequest $addGeolocationRequest)
+    {
+        try {
+            $validatedFields = $addGeolocationRequest->validated();
+            $this->lifeInsuranceService->addGeolocation(...$validatedFields);
+
+            return response()->json([
+                'success' => true
             ], JsonResponse::HTTP_OK);
         } catch (Exception $exception) {
             return response()->json([
@@ -78,5 +101,10 @@ class LifeInsuranceController extends Controller
                 'message' => $exception->getMessage()
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public function listPeriodsByDocument(ListPeriodsByDocumentRequest $listPeriodsByDocumentRequest)
+    {
+        # UNDER CONSTRUCTION
     }
 }
