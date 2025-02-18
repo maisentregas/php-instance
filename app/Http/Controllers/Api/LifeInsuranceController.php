@@ -24,7 +24,7 @@ class LifeInsuranceController extends Controller
     {
         try {
             $validatedFields = $insurePersonRequest->validated();
-            $response = $this->lifeInsuranceService->insurePerson($validatedFields['person']);
+            $response = $this->lifeInsuranceService->insurePerson((object) $validatedFields['person']);
 
             if (! $response) {
                 return response()->json([
@@ -33,7 +33,8 @@ class LifeInsuranceController extends Controller
             }
 
             return response()->json([
-                'success' => true
+                'success' => true,
+                'data' => $response
             ], JsonResponse::HTTP_OK);
         } catch (Exception $exception) {
             return response()->json([

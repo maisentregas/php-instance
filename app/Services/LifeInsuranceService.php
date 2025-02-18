@@ -29,11 +29,11 @@ class LifeInsuranceService
             $person->last_name,
             $person->birthday,
             $this->areNotFoundResponse($this->personDetailsByEmail($person->email)) ? $person->email : "",
-            ($person->phone != null && $person->phone != "" && $this->areNotFoundResponse($this->personDetailsByCellPhone($person->phone))) ? $person->phone : ""
+            (isset($person->phone) && $person->phone != "" && $this->areNotFoundResponse($this->personDetailsByCellPhone($person->phone))) ? $person->phone : ""
         );
 
         if ($response->failed())
-            throw new Exception($response->body());
+            throw new Exception($response->body(), $response->status());
 
         return $response;
     }
@@ -46,11 +46,11 @@ class LifeInsuranceService
             $person->last_name,
             $person->birthday,
             $this->areNotFoundResponse($this->personDetailsByEmail($person->email)) ? $person->email : "",
-            ($person->phone != null && $person->phone != "" && $this->areNotFoundResponse($this->personDetailsByCellPhone($person->phone))) ? $person->phone : ""
+            (isset($person->phone) && $person->phone != "" && $this->areNotFoundResponse($this->personDetailsByCellPhone($person->phone))) ? $person->phone : ""
         );
 
         if ($response->failed())
-            throw new Exception($response->body());
+            throw new Exception($response->body(), $response->status());
 
         return $response;
     }
@@ -85,7 +85,7 @@ class LifeInsuranceService
         $response = $this->lifeInsuranceRepository->createContract($document);
 
         if ($response->failed())
-            throw new Exception($response->body());
+            throw new Exception($response->body(), $response->status());
 
         return json_decode($response->body())->id;
     }
@@ -105,7 +105,7 @@ class LifeInsuranceService
         return $this->lifeInsuranceRepository->cancelPeriod($periodId, $finishedAt);
     }
 
-    public function insurePerson($person): bool
+    public function insurePerson($person): Collection|bool
     {
         try {
             $activeContract = null;
@@ -127,7 +127,13 @@ class LifeInsuranceService
                 $createPeriodResponse = $this->createPeriod($person, $startedAt);
             }
 
-            return true;
+            $periodId = json_decode($createPeriodResponse->body())->id;
+
+            return collect([
+                'period_id' => $periodId,
+                'started_at' => $startedAt,
+                'person' => $person
+            ]);
         } catch (Exception $exception) {
             Log::error('Life insurance | ' . $exception);
 
