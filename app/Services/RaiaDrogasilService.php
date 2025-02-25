@@ -77,22 +77,42 @@ class RaiaDrogasilService
         return cache()->store('redis')->get('token-' . $email . '-' . hash('sha256', $apiKey));
     }
 
+    private function getApiKey($cnpj)
+    {
+        $uri = '/companyRaiaDrogasil/' . $cnpj . '/apiKey';
+
+        # Enviar token de segurança.
+        $apiKeyResponse = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'X-App-ID' => 'integration',
+            'X-Raia-Drogasil-Token' => config('services.raia_drogasil.internal_access_token')
+        ])->get($this->url.$uri);
+
+        if ($apiKeyResponse->failed())
+            throw new Exception($apiKeyResponse->body(), $apiKeyResponse->status());
+
+        return $apiKeyResponse['apiKey'];
+    }
+
     public function handleMessages()
     {
         $subscription = $this->pubSubClient->subscription('RAIA-Outbound-Tender-LETS');
         $pulledMessages = $subscription->pull();
-
+        
         foreach ($pulledMessages as $pulledMessage) {
             $orderMessage = json_decode($pulledMessage->data(), true);
 
-            # Search for apiKey in the future
-            $apiKey = 'm0pNc01wvCdRTHqXeImDOQg2kZnlV6J6';
-            $accessToken = $this->token($orderMessage['Extended']['Email'], $apiKey);
+            try {
+                $apiKey = $this->getApiKey($orderMessage['Extended']['CNPJLoja']);
+                $accessToken = $this->token($orderMessage['Extended']['Email'], $apiKey);
 
-            if (isset($orderMessage['TenderResponseStatus']) && strtolower($orderMessage['TenderResponseStatus']) == "recalled") {
-                $this->recallOrder($orderMessage, $accessToken);
-            } else {
-                $this->createOrder($orderMessage, $accessToken);
+                if (isset($orderMessage['TenderResponseStatus']) && strtolower($orderMessage['TenderResponseStatus']) == "recalled") {
+                    $this->recallOrder($orderMessage, $accessToken);
+                } else {
+                    $this->createOrder($orderMessage, $accessToken);
+                }
+            } catch (Exception $exception) {
+                Log::error('Error while messages were being processed | ' . $exception->getMessage());
             }
 
             $subscription->acknowledge($pulledMessage);
@@ -108,7 +128,7 @@ class RaiaDrogasilService
         $existsOrderResponse = Http::asForm()->withHeaders([
             'X-App-ID' => 'integration',
             'x-access-token' => $accessToken
-        ])->get($this->url . '/order/' . $orderMessage['ShipmentId']);
+        ])->get($this->url . '/order/' . $orderMessage['ShipmentId'] . '/pedido');
 
         if ($existsOrderResponse->failed()) {
             # Order identification data
@@ -180,7 +200,7 @@ class RaiaDrogasilService
         $orderResponse = Http::asForm()->withHeaders([
             'X-App-ID' => 'integration',
             'x-access-token' => $accessToken
-        ])->get($this->url . '/order/' . $orderMessage['ShipmentId']);
+        ])->get($this->url . '/order/' . $orderMessage['ShipmentId'] . '/pedido');
 
         if ($orderResponse->failed()) {
             Log::info('Order with shipment id. ' . $orderMessage['ShipmentId'] . ' not found.');
