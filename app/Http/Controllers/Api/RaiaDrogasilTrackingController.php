@@ -25,11 +25,11 @@ class RaiaDrogasilTrackingController extends Controller
 
             return response()->json([
                 'message' => 'Tracking sent!',
-                'data'    => $response
+                'data' => $response
             ], JsonResponse::HTTP_OK);
         } catch (Exception $exception) {
             return response()->json([
-                'error'   => 'Error while triyng to send tracking.',
+                'error' => 'Error while triyng to send tracking.',
                 'message' => $exception->getMessage()
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }

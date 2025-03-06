@@ -36,6 +36,7 @@ return [
     ],
 
     'raia_drogasil' => [
+        'mais_entregas_api_url' => env('MAIS_ENTREGAS_API_URL'),
         'internal_access_token' => env('INTERNAL_ACCESS_TOKEN')
     ],
 

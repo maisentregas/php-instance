@@ -17,7 +17,7 @@ class ValidateInternalToken
     {
         $internalAccessToken = config('services.raia_drogasil.internal_access_token');
 
-        if (! isset($request->access_token) || $request->access_token !== $internalAccessToken)
+        if (is_null($request->header('X-Raia-Drogasil-Token')) || $request->header('X-Raia-Drogasil-Token') !== $internalAccessToken)
             return response()->json(['message' => 'Access denied.'], Response::HTTP_UNAUTHORIZED);
 
         return $next($request);

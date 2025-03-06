@@ -26,12 +26,13 @@ use Exception;
 class RaiaDrogasilService
 {
     private $pubSubClient;
-    private $url = 'https://api.maisentregas.com';
+    private $url;
 
     public function __construct()
     {
         putenv(self::getEnv());
 
+        $this->url = config('services.raia_drogasil.mais_entregas_api_url'); # http://host.docker.internal:3000
         $this->pubSubClient = new PubSubClient([
             'projectId' => self::getProjectId(),
         ]);
@@ -77,9 +78,9 @@ class RaiaDrogasilService
         return cache()->store('redis')->get('token-' . $email . '-' . hash('sha256', $apiKey));
     }
 
-    private function getApiKey($cnpj)
+    private function getApiKey($cnpj, $carrierId)
     {
-        $uri = '/companyRaiaDrogasil/' . $cnpj . '/apiKey';
+        $uri = '/raiaDrogasil/' . $carrierId . '/' . $cnpj . '/apiKey';
 
         # Enviar token de segurança.
         $apiKeyResponse = Http::withHeaders([
@@ -103,7 +104,7 @@ class RaiaDrogasilService
             $orderMessage = json_decode($pulledMessage->data(), true);
 
             try {
-                $apiKey = $this->getApiKey($orderMessage['Extended']['CNPJLoja']);
+                $apiKey = $this->getApiKey($orderMessage['Extended']['CNPJLoja'], $orderMessage['CarrierId']);
                 $accessToken = $this->token($orderMessage['Extended']['Email'], $apiKey);
 
                 if (isset($orderMessage['TenderResponseStatus']) && strtolower($orderMessage['TenderResponseStatus']) == "recalled") {
@@ -211,7 +212,7 @@ class RaiaDrogasilService
         $timestamp = Carbon::now();
 
         $data = [
-            'reason' =>  "Cancelado pelo cliente",
+            'reason' =>  'Cancelado pelo cliente',
             'timestamp' => $timestamp,
             'shipment_id' => $orderMessage['ShipmentId'],
             'carrier_id' => $orderMessage['CarrierId'],
@@ -226,7 +227,7 @@ class RaiaDrogasilService
         ]);
 
         if ($canceledOrderResponse->successful()) {
-            $this->publishTracking(new RaiaDrogasilRecallOrderResource((object) $data));
+            # $this->publishTracking(new RaiaDrogasilRecallOrderResource((object) $data));
 
             Log::info('Order cancelled. | Id. ' . $orderResponse['id'] . ' | Shipment id. ' . $orderMessage['ShipmentId']);
         }
@@ -234,8 +235,6 @@ class RaiaDrogasilService
 
     public function sendTracking(Array $params)
     {
-        # Integration name == 'raia'?
-
         $data = [
             'shipment_id' => $params['shipment_id'],
             'carrier_id' => $params['carrier_id'],

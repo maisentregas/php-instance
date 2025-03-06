@@ -23,6 +23,7 @@ class RaiaDrogasilCreateOrderResource extends JsonResource
             'order' => $this->shipment_id,
             'document' => $this->document,
             'address' => $this->address,
+            'raiaDrogasilDeliveryId' => 'raia_drogasil'
         ];
     }
 }
