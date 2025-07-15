@@ -15,9 +15,9 @@ class ValidateInternalToken
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $internalAccessToken = config('services.raia_drogasil.internal_access_token');
+        $internalAccessToken = config('services.mais_entregas.internal_access_token');
 
-        if (is_null($request->header('X-Raia-Drogasil-Token')) || $request->header('X-Raia-Drogasil-Token') !== $internalAccessToken)
+        if (is_null($request->header('X-Mais-Entregas-Token')) || $request->header('X-Mais-Entregas-Token') !== $internalAccessToken)
             return response()->json(['message' => 'Access denied.'], Response::HTTP_UNAUTHORIZED);
 
         return $next($request);

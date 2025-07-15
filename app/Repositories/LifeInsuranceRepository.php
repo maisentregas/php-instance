@@ -10,15 +10,21 @@ use Exception;
 class LifeInsuranceRepository
 {
 	private $apiUrl;
-	private $userKey;
 	private $secretKey;
+    private $userKey;
 
-	public function __construct($apiUrl = null, $secretKey = null, $userKey = null)
+	public function __construct()
 	{
-        $this->apiUrl = $apiUrl ?? config('services.iza_intermittent.api_url');
-        $this->userKey = $userKey ?? config('services.iza_intermittent.user_key');
-        $this->secretKey = $secretKey ?? config('services.iza_intermittent.user_secret');
+        $this->apiUrl = config('services.mais_entregas.iza_intermittent.api_url');
 	}
+
+    public function setCredentials($userKey = null, $secretKey = null)
+    {
+        $this->secretKey = $secretKey ?? config('services.mais_entregas.iza_intermittent.user_secret');
+        $this->userKey = $userKey ?? config('services.mais_entregas.iza_intermittent.user_key');
+
+        return;
+    }
 
     public function createPerson($document, $firstName, $lastName, $birthday, $email, $phone)
     {

@@ -32,7 +32,7 @@ class RaiaDrogasilService
     {
         putenv(self::getEnv());
 
-        $this->url = config('services.raia_drogasil.mais_entregas_api_url'); # http://host.docker.internal:3000
+        $this->url = config('services.mais_entregas.raia_drogasil.api_url'); # http://host.docker.internal:3000
         $this->pubSubClient = new PubSubClient([
             'projectId' => self::getProjectId(),
         ]);
@@ -86,7 +86,7 @@ class RaiaDrogasilService
         $apiKeyResponse = Http::withHeaders([
             'Content-Type' => 'application/json',
             'X-App-ID' => 'integration',
-            'X-Raia-Drogasil-Token' => config('services.raia_drogasil.internal_access_token')
+            'X-Raia-Drogasil-Token' => config('services.mais_entregas.internal_access_token')
         ])->get($this->url.$uri);
 
         if ($apiKeyResponse->failed())

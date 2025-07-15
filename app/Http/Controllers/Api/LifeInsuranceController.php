@@ -13,9 +13,9 @@ use App\Http\Requests\{
 use App\Services\LifeInsuranceService;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class LifeInsuranceController extends Controller
 {
@@ -26,10 +26,39 @@ class LifeInsuranceController extends Controller
         $this->lifeInsuranceService = $lifeInsuranceService;
     }
 
+    private function decryptData($encryptedData)
+    {
+        $key = hex2bin(config('services.mais_entregas.iza_intermittent.crypto_key'));
+        $cipher = 'aes-128-cbc';
+
+        list($iv, $encrypted) = explode(':', $encryptedData);
+
+        if (!$iv || !$encrypted) {
+            throw new \Exception("Dados criptografados inválidos ou malformados");
+        }
+
+        $iv = hex2bin($iv);
+
+        if ($iv === false) {
+            throw new \Exception("Falha ao converter IV de hexadecimal para binário");
+        }
+
+        $decrypted = openssl_decrypt(hex2bin($encrypted), $cipher, $key, OPENSSL_RAW_DATA, $iv);
+
+        if ($decrypted === false) {
+            throw new \Exception("Falha na descriptografia: " . openssl_error_string());
+        }
+
+        return $decrypted;
+    }
+
     public function insurePerson(InsurePersonRequest $insurePersonRequest)
     {
         try {
             $validatedFields = $insurePersonRequest->validated();
+
+            $this->lifeInsuranceService->setCredentials(...explode(':', $this->decryptData($insurePersonRequest->header('X-Encrypted-Data'))));
+
             $response = $this->lifeInsuranceService->insurePerson((object) $validatedFields['person']);
 
             if (! $response) {
@@ -43,6 +72,8 @@ class LifeInsuranceController extends Controller
                 'data' => $response
             ], JsonResponse::HTTP_OK);
         } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => $exception->getMessage()
@@ -54,6 +85,9 @@ class LifeInsuranceController extends Controller
     {
         try {
             $validatedFields = $addGeolocationRequest->validated();
+
+            $this->lifeInsuranceService->setCredentials(...explode(':', $this->decryptData($addGeolocationRequest->header('X-Encrypted-Data'))));
+
             $this->lifeInsuranceService->addGeolocation(...$validatedFields);
 
             return response()->json([
@@ -71,6 +105,9 @@ class LifeInsuranceController extends Controller
     {
         try {
             $validatedFields = $finalizeInsuranceRequest->validated();
+
+            $this->lifeInsuranceService->setCredentials(...explode(':', $this->decryptData($finalizeInsuranceRequest->header('X-Encrypted-Data'))));
+
             $response = $this->lifeInsuranceService->finalizeInsurance($validatedFields['period_id']);
 
             return response()->json([
@@ -89,6 +126,9 @@ class LifeInsuranceController extends Controller
     {
         try {
             $validatedFields = $cancelOrFinalizeInsuranceRequest->validated();
+
+            $this->lifeInsuranceService->setCredentials(...explode(':', $this->decryptData($cancelOrFinalizeInsuranceRequest->header('X-Encrypted-Data'))));
+            
             $response = $this->lifeInsuranceService->cancelOrFinalizeInsurance($validatedFields['period_id'], $validatedFields['period_started_at']);
 
             return response()->json([

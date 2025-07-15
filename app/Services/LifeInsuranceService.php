@@ -21,6 +21,11 @@ class LifeInsuranceService
         $this->lifeInsuranceRepository = new LifeInsuranceRepository();
     }
 
+    public function setCredentials($userKey = null, $secretKey = null)
+    {
+        return $this->lifeInsuranceRepository->setCredentials($userKey, $secretKey);
+    }
+
     private function createPerson($person)
     {
         $response = $this->lifeInsuranceRepository->createPerson(
@@ -129,7 +134,7 @@ class LifeInsuranceService
                 if (! $activeContract)
                     $activeContract = $this->createContract($person->document);
 
-                $createPeriodResponse = $this->createPeriod($person, $startedAt);
+                $createPeriodResponse = $this->createPeriod($person->document, $startedAt);
             }
 
             $periodId = json_decode($createPeriodResponse->body())->id;

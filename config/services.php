@@ -35,15 +35,19 @@ return [
         ],
     ],
 
-    'raia_drogasil' => [
-        'mais_entregas_api_url' => env('MAIS_ENTREGAS_API_URL'),
-        'internal_access_token' => env('INTERNAL_ACCESS_TOKEN')
-    ],
+    'mais_entregas' => [
+        'internal_access_token' => env('INTERNAL_ACCESS_TOKEN'),
 
-    # Default keys are from homolog
-    'iza_intermittent' => [
-        'api_url' => env('IZA_API_URL', 'https://intermittent-web-api.hml.iza.com.vc/api'),
-        'user_key' => env('IZA_USER_KEY', '2369a043-3644-4e8e-b6df-0073a1e433a0'),
-        'user_secret' => env('IZA_USER_SECRET', 'laf1pNYI4okp5ogFvQq2XUHRmvWNkg0WYG0R5/Xutnzh+Ddyrc63bmMYEDLof4AP')
-    ]
+        'raia_drogasil' => [
+            'api_url' => env('MAIS_ENTREGAS_RAIA_DROGASIL_API_URL'),
+        ],
+
+        # Default keys are from homolog
+        'iza_intermittent' => [
+            'api_url' => env('IZA_API_URL', 'https://intermittent-web-api.hml.iza.com.vc/api'),
+            'user_key' => env('IZA_USER_KEY', '2369a043-3644-4e8e-b6df-0073a1e433a0'),
+            'user_secret' => env('IZA_USER_SECRET', 'laf1pNYI4okp5ogFvQq2XUHRmvWNkg0WYG0R5/Xutnzh+Ddyrc63bmMYEDLof4AP'),
+            'crypto_key' => env('ENCRYPTION_SECRET_KEY')
+        ]
+    ],
 ];
