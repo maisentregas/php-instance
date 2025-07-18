@@ -102,7 +102,12 @@ class LifeInsuranceService
 
     private function createPeriod($document, $startedAt)
     {
-        return $this->lifeInsuranceRepository->createPeriod($document, $startedAt);
+        $response = $this->lifeInsuranceRepository->createPeriod($document, $startedAt);
+
+        if ($response->failed())
+            throw new Exception($response->body(), $response->status());
+
+        return $response;
     }
 
     private function updatePeriod($periodId, $finishedAt)
