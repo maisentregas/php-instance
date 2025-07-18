@@ -5,6 +5,8 @@ namespace App\Repositories;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+use Carbon\Carbon;
+
 use Exception;
 
 class LifeInsuranceRepository
@@ -31,7 +33,7 @@ class LifeInsuranceRepository
         $params = [
             "doc" => str_replace([' ', '.', '-', '(', ')'], '', $document),
             "name" => $firstName . ' ' . $lastName,
-            "birthed_at" => date("Y-m-d", strtotime(str_replace(['/'], '-', $birthday))),
+            "birthed_at" => Carbon::parse(str_replace('/', '-', $birthday))->format('Y-m-d'),
             "email" => $email,
             "main_cell_phone" => str_replace([' ', '.', '-', '(', ')', '+'], '', $phone)
         ];
@@ -46,7 +48,7 @@ class LifeInsuranceRepository
         $params = [
             "doc" => str_replace([' ', '.', '-', '(', ')'], '', $document),
             "name" => $firstName . ' ' . $lastName,
-            "birthed_at" => date("Y-m-d", strtotime(str_replace(['/'], '-', $birthday))),
+            "birthed_at" => Carbon::parse(str_replace('/', '-', $birthday))->format('Y-m-d'),
             "email" => $email,
             "main_cell_phone" => str_replace([' ', '.', '-', '(', ')', '+'], '', $phone)
         ];

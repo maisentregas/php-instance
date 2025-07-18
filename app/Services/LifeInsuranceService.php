@@ -124,7 +124,7 @@ class LifeInsuranceService
     {
         try {
             $activeContract = null;
-            $startedAt = date('Y-m-d\TH:i:s');
+            $startedAt = now()->format('Y-m-d\TH:i:s');
 
             $createPeriodResponse = $this->createPeriod($person->document, $startedAt);
 
@@ -159,7 +159,7 @@ class LifeInsuranceService
     public function finalizeInsurance($periodId): Collection
     {
         try {
-            $finishedAt = date('Y-m-d\TH:i:s');
+            $finishedAt = now()->format('Y-m-d\TH:i:s');
 
             Log::info('Finalizing insurance with period id. ' . $periodId);
 
@@ -185,7 +185,7 @@ class LifeInsuranceService
     public function cancelOrFinalizeInsurance($periodId, $periodStartedAt): Collection
     {
         try {
-            $finishedAt = date('Y-m-d\TH:i:s');
+            $finishedAt = now()->format('Y-m-d\TH:i:s');
             $status = '';
 
             Log::info('Finalizing or canceling insurance with period id. ' . $periodId);
