@@ -115,9 +115,13 @@ class LifeInsuranceRepository
             "long" => strval(round($longitude, 6))
         ];
 
+        Log::info('Life insurance test', $params);
+
         $specificUrl = "/integrations/intermittent/persons/geolocation";
 
         $response = $this->postHttp($specificUrl, $params);
+
+        Log::info('Life insurance test' . $response->body());
 
         if ($response->failed())
             Log::info('Life insurance addGeolocation failed response: ' . $response->body());

@@ -77,7 +77,7 @@ class LifeInsuranceService
 
     public function addGeolocation($document, $datetime, $latitude, $longitude)
     {
-        $response = $this->lifeInsuranceRepository->addGeolocation($document, $datetime, $latitude, $longitude);
+        $response = $this->lifeInsuranceRepository->addGeolocation($document, Carbon::parse($datetime)->setTimezone('America/Sao_Paulo'), $latitude, $longitude);
 
         if ($response->failed())
             throw new Exception($response->body(), $response->status());
