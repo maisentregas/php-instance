@@ -24,8 +24,8 @@ class AddGeolocationRequest extends FormRequest
         return [
             'document' => 'required|string',
             'datetime' => 'required|string',
-            'latitude' => 'required|decimal:6',
-            'longitude' => 'required|decimal:6'
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180'
         ];
     }
 }
