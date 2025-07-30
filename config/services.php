@@ -44,7 +44,8 @@ return [
 
         # Default keys are from homolog
         'iza_intermittent' => [
-            'api_url' => env('IZA_API_URL', 'https://intermittent-web-api.hml.iza.com.vc/api'),
+//            'api_url' => env('IZA_API_URL', 'https://intermittent-web-api.hml.iza.com.vc/api'),
+            'api_url' => env('IZA_API_URL', 'https://intermittent-web-api.iza.com.vc/api'),
             'user_key' => env('IZA_USER_KEY', '2369a043-3644-4e8e-b6df-0073a1e433a0'),
             'user_secret' => env('IZA_USER_SECRET', 'laf1pNYI4okp5ogFvQq2XUHRmvWNkg0WYG0R5/Xutnzh+Ddyrc63bmMYEDLof4AP'),
             'crypto_key' => env('ENCRYPTION_SECRET_KEY')

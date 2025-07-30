@@ -65,9 +65,9 @@ class LifeInsuranceRepository
         ];
 
         $specificUrl = "/integrations/persons";
-        
+
         $response = $this->getHttp($specificUrl, $params);
-        
+
         if ($response->failed())
             Log::info('Life insurance personDetailsByDocument failed response: ' . $response->body());
 
@@ -117,10 +117,18 @@ class LifeInsuranceRepository
 
         $specificUrl = "/integrations/intermittent/persons/geolocation";
 
+        $fullUrl = $this->apiUrl . $specificUrl;
+        Log::info('Life Insurance addGeolocation full URL: ' . $fullUrl);
+        Log::info('Life Insurance addGeolocation request params: ' . json_encode($params));
+
         $response = $this->postHttp($specificUrl, $params);
 
-        if ($response->failed())
-            Log::info('Life insurance addGeolocation failed response: ' . $response->body());
+        if ($response->failed()) {
+            Log::error('Life Insurance addGeolocation failed - Status: ' . $response->status() . ' - Response: ' . $response->body());
+            Log::error('Life Insurance addGeolocation failed - Headers: ' . json_encode($response->headers()));
+        } else {
+            Log::info('Life Insurance addGeolocation success: ' . $response->body());
+        }
 
         return $response;
     }
